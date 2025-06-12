@@ -1,9 +1,11 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Provider } from 'react-redux';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Provider, useSelector } from 'react-redux';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { store } from './store';
+import type { RootState } from './store';
 import Navigation from './components/Layout/Navigation';
 import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
 
 const theme = createTheme({
   palette: {
@@ -14,15 +16,28 @@ const theme = createTheme({
   },
 });
 
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+};
+
 function App() {
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
-          <Navigation />
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/"
+              element={
+                <PrivateRoute>
+                  <Navigation />
+                  <HomePage />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
