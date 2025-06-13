@@ -18,7 +18,7 @@ import {
   InputLabel,
   Typography,
   CircularProgress,
-  Tooltip,
+  Alert,
 } from '@mui/material';
 import { 
   Refresh as RefreshIcon,
@@ -50,7 +50,7 @@ const CurrencyList: React.FC = () => {
       const currencyList = currencyApi.convertRates(rates);
       setCurrencies(currencyList);
       dispatch(setTotalItems(currencyList.length));
-    } catch (err) {
+    } catch {
       setError('Ошибка при загрузке курсов валют');
     } finally {
       setLoading(false);
@@ -114,7 +114,7 @@ const CurrencyList: React.FC = () => {
   if (error) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <Typography color="error">{error}</Typography>
+        <Alert severity="error">{error}</Alert>
       </Box>
     );
   }

@@ -20,6 +20,7 @@ import {
   Menu as MenuIcon,
   List as ListIcon,
   Logout as LogoutIcon,
+  CurrencyExchange as CurrencyExchangeIcon,
 } from '@mui/icons-material';
 import type { RootState } from '../../store';
 import { logout } from '../../store/slices/auth';
@@ -40,6 +41,7 @@ const Navigation: React.FC = () => {
 
   const menuItems = [
     { text: 'Список валют', path: '/', icon: <ListIcon /> },
+    { text: 'Конвертер', path: '/converter', icon: <CurrencyExchangeIcon /> },
   ];
 
   const handleNavigation = (path: string) => {

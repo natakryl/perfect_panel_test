@@ -6,6 +6,7 @@ import type { RootState } from './store';
 import Navigation from './components/Layout/Navigation';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import ConverterPage from './pages/ConverterPage';
 
 const theme = createTheme({
   palette: {
@@ -33,8 +34,17 @@ function App() {
               path="/"
               element={
                 <PrivateRoute>
-                  <Navigation />
+                 <Navigation/>
                   <HomePage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/converter"
+              element={
+                <PrivateRoute>
+                  <Navigation/>
+                  <ConverterPage/>
                 </PrivateRoute>
               }
             />
