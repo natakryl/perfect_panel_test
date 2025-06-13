@@ -22,7 +22,7 @@ import {
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import type { RootState } from '../../store';
-import { clearUser } from '../../store/slices/authSlice';
+import { logout } from '../../store/slices/auth';
 
 const Navigation: React.FC = () => {
   const dispatch = useDispatch();
@@ -31,10 +31,10 @@ const Navigation: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const { user } = useSelector((state: RootState) => state.auth);
+  const user = useSelector((state: RootState) => state.auth.user);
 
   const handleLogout = () => {
-    dispatch(clearUser());
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -112,7 +112,7 @@ const Navigation: React.FC = () => {
                 onClick={handleLogout}
                 startIcon={<LogoutIcon />}
               >
-                Выйти {user?.username && `(${user.username})`}
+                Выйти {user && `(${user})`}
               </Button>
             </Box>
           )}

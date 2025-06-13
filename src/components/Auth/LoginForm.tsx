@@ -9,7 +9,7 @@ import {
   Container,
   Paper,
 } from '@mui/material';
-import { setUser } from '../../store/slices/authSlice';
+import { login } from '../../store/slices/auth';
 import { authApi } from '../../services/api';
 
 const LoginForm: React.FC = () => {
@@ -28,12 +28,12 @@ const LoginForm: React.FC = () => {
     try {
       const success = await authApi.login(username, password);
       if (success) {
-        dispatch(setUser({ username }));
+        dispatch(login(username));
         navigate('/');
       } else {
         setError('Неверный логин или пароль');
       }
-    } catch {
+    } catch (err) {
       setError('Произошла ошибка при входе');
     } finally {
       setLoading(false);
