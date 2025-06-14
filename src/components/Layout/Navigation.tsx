@@ -33,23 +33,28 @@ const Navigation: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const user = useSelector((state: RootState) => state.auth.user);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
 
   const handleLogout = () => {
     dispatch(logout());
     navigate('/login');
   };
 
-  const menuItems = [
-    { text: 'Список валют', path: '/', icon: <ListIcon /> },
-    { text: 'Конвертер', path: '/converter', icon: <CurrencyExchangeIcon /> },
-  ];
-
   const handleNavigation = (path: string) => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
     navigate(path);
     if (isMobile) {
       setDrawerOpen(false);
     }
   };
+
+  const menuItems = [
+    { text: 'Список валют', path: '/', icon: <ListIcon /> },
+    { text: 'Конвертер', path: '/converter', icon: <CurrencyExchangeIcon /> },
+  ];
 
   const drawer = (
     <Box sx={{ width: 250 }} role="presentation">
@@ -64,12 +69,14 @@ const Navigation: React.FC = () => {
             <ListItemText primary={item.text} />
           </ListItemButton>
         ))}
-        <ListItemButton onClick={handleLogout}>
+        {isAuthenticated && (
+          <ListItemButton onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
           <ListItemText primary="Выйти" />
-        </ListItemButton>
+          </ListItemButton>
+        )}
       </List>
     </Box>
   );
@@ -109,13 +116,15 @@ const Navigation: React.FC = () => {
                   {item.text}
                 </Button>
               ))}
-              <Button
-                color="inherit"
-                onClick={handleLogout}
-                startIcon={<LogoutIcon />}
-              >
-                Выйти {user && `(${user})`}
-              </Button>
+              {isAuthenticated && (
+                <Button
+                  color="inherit"
+                  onClick={handleLogout}
+                  startIcon={<LogoutIcon />}
+                >
+                  Выйти {user && `(${user})`}
+                </Button>
+              )}
             </Box>
           )}
         </Toolbar>

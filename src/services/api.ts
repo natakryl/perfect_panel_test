@@ -1,32 +1,46 @@
 import { AUTH_CREDENTIALS } from '../constants';
+import axios from 'axios';
 import type { Currency } from '../types';
+import { API_BASE_URL } from '../constants';
 
-const API_BASE_URL = 'https://api.exchangerate.host';
+interface CurrencyData {
+  symbol: string;
+  quotes?: {
+    USD?: {
+      price: number;
+    };
+  };
+}
 
-export const authApi = {
-  login: async (username: string, password: string): Promise<boolean> => {
-    // Имитация задержки сети
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    if (username === AUTH_CREDENTIALS.username && password === AUTH_CREDENTIALS.password) {
-      return true;
-    }
-    throw new Error('Invalid credentials');
-  }
-};
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+});
 
 export const currencyApi = {
   getRates: async (): Promise<Record<string, string>> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/latest`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      return data.rates;
+      const response = await api.get('?limit=100');
+      console.log('API Response:', response.data);
+      
+      const rates: Record<string, string> = {};
+      
+      (Object.values(response.data.data) as CurrencyData[]).forEach((currency) => {
+        if (currency.symbol && currency.quotes?.USD?.price) {
+          rates[currency.symbol] = currency.quotes.USD.price.toString();
+        }
+      });
+      
+      console.log('Processed rates:', rates); 
+      return rates;
     } catch (error: unknown) {
-      console.error('Error fetching rates:', error);
-      throw error;
+      if (error instanceof Error) {
+        throw new Error(`Ошибка при получении курсов валют: ${error.message}`);
+      }
+      throw new Error('Произошла неизвестная ошибка при получении курсов валют');
     }
   },
 
@@ -35,6 +49,20 @@ export const currencyApi = {
       currency,
       rate,
     }));
+  },
+};
+
+export const authApi = {
+  login: async (username: string, password: string): Promise<boolean> => {
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(
+          username === AUTH_CREDENTIALS.username && 
+          password === AUTH_CREDENTIALS.password
+        );
+      }, 1000);
+    });
   },
 }; 
 

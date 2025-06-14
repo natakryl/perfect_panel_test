@@ -8,66 +8,67 @@ import {
   Select,
   MenuItem,
   Typography,
-  IconButton,
   CircularProgress,
-  Alert,
+  IconButton,
 } from '@mui/material';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import { SwapHoriz as SwapIcon } from '@mui/icons-material';
 import { currencyApi } from '../../services/api';
+import type { Currency } from '../../types';
 
 const CurrencyConverter: React.FC = () => {
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [amount, setAmount] = useState<string>('');
-  const [fromCurrency, setFromCurrency] = useState<string>('RUB');
+  const [amount, setAmount] = useState<string>('1');
+  const [fromCurrency, setFromCurrency] = useState<string>('BTC');
   const [toCurrency, setToCurrency] = useState<string>('USD');
   const [result, setResult] = useState<string>('');
-  const [rates, setRates] = useState<Record<string, string>>({});
+  const [resultWithCommission, setResultWithCommission] = useState<string>('');
+  const COMMISSION_RATE = 0.03; // 3% комиссия
 
   const convertCurrency = useCallback(() => {
-    if (!amount || !fromCurrency || !toCurrency || !rates) return;
+    if (!amount || !fromCurrency || !toCurrency) return;
 
-    const fromRate = parseFloat(rates[fromCurrency]);
-    const toRate = parseFloat(rates[toCurrency]);
-
-    if (isNaN(fromRate) || isNaN(toRate)) {
-      setError('Ошибка конвертации: неверные курсы валют');
-      return;
-    }
-
-    const result = (parseFloat(amount) * toRate) / fromRate;
-    setResult(result.toFixed(2));
-    setError(null);
-  }, [amount, fromCurrency, toCurrency, rates]);
-
-  const fetchRates = async () => {
-    try {
-      setLoading(true);
-      const rates = await currencyApi.getRates();
-      setRates(rates);
-    } catch {
-      setError('Ошибка при загрузке курсов валют');
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fromRate = parseFloat(currencies.find(c => c.currency === fromCurrency)?.rate || '1');
+    const toRate = parseFloat(currencies.find(c => c.currency === toCurrency)?.rate || '1');
+    const baseResult = (Number(amount) * toRate) / fromRate;
+    const commission = baseResult * COMMISSION_RATE;
+    const totalResult = baseResult + commission;
+    
+    setResult(baseResult.toFixed(8));
+    setResultWithCommission(totalResult.toFixed(8));
+  }, [amount, fromCurrency, toCurrency, currencies]);
 
   useEffect(() => {
-    fetchRates();
+    const fetchCurrencies = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const rates = await currencyApi.getRates();
+        const currencyList = currencyApi.convertRates(rates);
+        setCurrencies(currencyList);
+      } catch {
+        setError('Failed to fetch exchange rates');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCurrencies();
   }, []);
 
   useEffect(() => {
-    if (amount && fromCurrency && toCurrency && rates) {
+    if (amount && fromCurrency && toCurrency) {
       convertCurrency();
     }
-  }, [amount, fromCurrency, toCurrency, rates, convertCurrency]);
+  }, [amount, fromCurrency, toCurrency, convertCurrency]);
 
   const handleSwapCurrencies = () => {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
   };
 
-  if (loading && Object.keys(rates).length === 0) {
+  if (loading && currencies.length === 0) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
         <CircularProgress />
@@ -78,66 +79,77 @@ const CurrencyConverter: React.FC = () => {
   if (error) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <Alert severity="error">{error}</Alert>
+        <Typography color="error">{error}</Typography>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+    <Paper sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
+      <Typography variant="h6" gutterBottom>
         Конвертер валют
       </Typography>
-      <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField
-            label="Сумма"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            fullWidth
-          />
-          <FormControl fullWidth>
-            <InputLabel>Из валюты</InputLabel>
-            <Select
-              value={fromCurrency}
-              label="Из валюты"
-              onChange={(e) => setFromCurrency(e.target.value)}
-            >
-              {Object.keys(rates).map((currency) => (
-                <MenuItem key={currency} value={currency}>
-                  {currency}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <IconButton onClick={handleSwapCurrencies} color="primary">
-              <SwapHorizIcon />
-            </IconButton>
-          </Box>
-          <FormControl fullWidth>
-            <InputLabel>В валюту</InputLabel>
-            <Select
-              value={toCurrency}
-              label="В валюту"
-              onChange={(e) => setToCurrency(e.target.value)}
-            >
-              {Object.keys(rates).map((currency) => (
-                <MenuItem key={currency} value={currency}>
-                  {currency}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          {result && (
-            <Typography variant="h6" sx={{ mt: 2, textAlign: 'center' }}>
-              {amount} {fromCurrency} = {result} {toCurrency}
-            </Typography>
-          )}
+      <Box display="flex" alignItems="center" gap={2}>
+        <TextField
+          label="Сумма"
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          sx={{ width: '200px' }}
+        />
+        <FormControl sx={{ width: '200px' }}>
+          <InputLabel>Из валюты</InputLabel>
+          <Select
+            value={fromCurrency}
+            onChange={(e) => setFromCurrency(e.target.value)}
+            displayEmpty
+            inputProps={{ 'aria-label': 'Выберите исходную валюту' }}
+          >
+            <MenuItem value="" disabled>
+              Выберите валюту
+            </MenuItem>
+            {currencies.map((currency) => (
+              <MenuItem key={currency.currency} value={currency.currency}>
+                {currency.currency}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <IconButton onClick={handleSwapCurrencies} color="primary">
+          <SwapIcon />
+        </IconButton>
+
+        <FormControl sx={{ width: '200px' }}>
+          <InputLabel>В валюту</InputLabel>
+          <Select
+            value={toCurrency}
+            onChange={(e) => setToCurrency(e.target.value)}
+            displayEmpty
+            inputProps={{ 'aria-label': 'Выберите целевую валюту' }}
+          >
+            <MenuItem value="" disabled>
+              Выберите валюту
+            </MenuItem>
+            {currencies
+              .filter(currency => currency.currency !== fromCurrency)
+              .map((currency) => (
+              <MenuItem key={currency.currency} value={currency.currency}>
+                {currency.currency}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+        {result && (
+        <Box mt={3}>
+          <Typography variant="h6" align="center">
+            {amount} {fromCurrency} → {resultWithCommission} {toCurrency} ({result} {toCurrency} + {COMMISSION_RATE * 100}%)
+          </Typography>
         </Box>
-      </Paper>
-    </Box>
+        )}
+    </Paper>
   );
 };
 

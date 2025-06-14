@@ -17,7 +17,7 @@ const theme = createTheme({
   },
 });
 
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedContent = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
@@ -28,24 +28,23 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
+          <Navigation />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route
               path="/"
               element={
-                <PrivateRoute>
-                 <Navigation/>
+                <ProtectedContent>
                   <HomePage />
-                </PrivateRoute>
+                </ProtectedContent>
               }
             />
             <Route
               path="/converter"
               element={
-                <PrivateRoute>
-                  <Navigation/>
-                  <ConverterPage/>
-                </PrivateRoute>
+                <ProtectedContent>
+                  <ConverterPage />
+                </ProtectedContent>
               }
             />
           </Routes>

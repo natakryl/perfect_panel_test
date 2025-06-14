@@ -26,11 +26,15 @@ const LoginForm: React.FC = () => {
     setLoading(true);
 
     try {
-      await authApi.login(username, password);
+      const success = await authApi.login(username, password);
+      if (success) {
       dispatch(login(username));
       navigate('/');
+    } else {
+      setError('Неверный логин или пароль');
+      }
     } catch {
-      setError('Неверное имя пользователя или пароль');
+      setError('Invalid credentials');
     } finally {
       setLoading(false);
     }
@@ -107,4 +111,4 @@ const LoginForm: React.FC = () => {
   );
 };
 
-export default LoginForm; 
+export default LoginForm;

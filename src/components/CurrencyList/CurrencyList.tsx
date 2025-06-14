@@ -18,7 +18,6 @@ import {
   InputLabel,
   Typography,
   CircularProgress,
-  Alert,
 } from '@mui/material';
 import { 
   Refresh as RefreshIcon,
@@ -51,7 +50,7 @@ const CurrencyList: React.FC = () => {
       setCurrencies(currencyList);
       dispatch(setTotalItems(currencyList.length));
     } catch {
-      setError('Ошибка при загрузке курсов валют');
+      setError('Failed to fetch currencies');
     } finally {
       setLoading(false);
     }
@@ -81,13 +80,13 @@ const CurrencyList: React.FC = () => {
     const value = event.target.value;
     switch (value) {
       case 'asc':
-        dispatch(setSort('asc'));
+      dispatch(setSort('asc'));
         break;
       case 'desc':
-        dispatch(setSort('desc'));
+      dispatch(setSort('desc'));
         break;
       default:
-        dispatch(resetSort());
+      dispatch(resetSort());
     }
   };
 
@@ -114,7 +113,7 @@ const CurrencyList: React.FC = () => {
   if (error) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <Alert severity="error">{error}</Alert>
+        <Typography color="error">{error}</Typography>
       </Box>
     );
   }
@@ -123,19 +122,19 @@ const CurrencyList: React.FC = () => {
     <Box sx={{ width: '100%' }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Box display="flex" gap={2} alignItems="center">
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel>Размер страницы</InputLabel>
-            <Select
-              value={pageSize}
-              label="Размер страницы"
-              onChange={handleSelectChange}
-            >
-              <MenuItem value={10}>10</MenuItem>
-              <MenuItem value={25}>25</MenuItem>
-              <MenuItem value={50}>50</MenuItem>
-              <MenuItem value={100}>100</MenuItem>
-            </Select>
-          </FormControl>
+        <FormControl sx={{ minWidth: 120 }}>
+          <InputLabel>Размер страницы</InputLabel>
+          <Select
+            value={pageSize}
+            label="Размер страницы"
+            onChange={handleSelectChange}
+          >
+            <MenuItem value={10}>10</MenuItem>
+            <MenuItem value={25}>25</MenuItem>
+            <MenuItem value={50}>50</MenuItem>
+            <MenuItem value={100}>100</MenuItem>
+          </Select>
+        </FormControl>
           <FormControl sx={{ minWidth: 180 }}>
             <InputLabel>Сортировка</InputLabel>
             <Select
@@ -171,11 +170,11 @@ const CurrencyList: React.FC = () => {
 
       <Paper sx={{ width: '100%', mb: 2 }}>
         <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
+        <Table>
+          <TableHead>
+            <TableRow>
                 <TableCell sx={{ width: '40%' }}>Валюта</TableCell>
-                <TableCell 
+              <TableCell
                   sx={{ width: '60%' }}
                   align="right"
                 >
@@ -187,21 +186,21 @@ const CurrencyList: React.FC = () => {
                       </Typography>
                     )}
                   </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedCurrencies.map((currency) => (
+              <TableRow key={currency.currency}>
+                <TableCell>{currency.currency}</TableCell>
+                  <TableCell align="right">
+                  {parseFloat(currency.rate).toFixed(18)}
                 </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedCurrencies.map((currency) => (
-                <TableRow key={currency.currency}>
-                  <TableCell>{currency.currency}</TableCell>
-                  <TableCell align="right">
-                    {parseFloat(currency.rate).toFixed(18)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
       </Paper>
 
       <TablePagination
