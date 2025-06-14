@@ -26,20 +26,32 @@ import {
   ArrowDownward as ArrowDownwardIcon,
 } from '@mui/icons-material';
 import type { RootState } from '../../store/types';
-import { setPage, setPageSize, setTotalItems } from '../../store/slices/pagination';
 import { setSort, resetSort } from '../../store/slices/sort';
 import { currencyApi } from '../../services/api';
 import type { Currency } from '../../types';
 
 const CurrencyList: React.FC = () => {
   const dispatch = useDispatch();
-  const { page, pageSize, totalItems } = useSelector(
-    (state: RootState) => state.pagination
-  );
   const { direction } = useSelector((state: RootState) => state.sort);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(() => {
+    const savedPage = localStorage.getItem('currencyListPage');
+    return savedPage ? parseInt(savedPage, 10) : 0;
+  });
+  const [rowsPerPage, setRowsPerPage] = useState(() => {
+    const savedRowsPerPage = localStorage.getItem('currencyListRowsPerPage');
+    return savedRowsPerPage ? parseInt(savedRowsPerPage, 10) : 10;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('currencyListPage', page.toString());
+  }, [page]);
+
+  useEffect(() => {
+    localStorage.setItem('currencyListRowsPerPage', rowsPerPage.toString());
+  }, [rowsPerPage]);
 
   const fetchCurrencies = useCallback(async () => {
     try {
@@ -48,32 +60,26 @@ const CurrencyList: React.FC = () => {
       const rates = await currencyApi.getRates();
       const currencyList = currencyApi.convertRates(rates);
       setCurrencies(currencyList);
-      dispatch(setTotalItems(currencyList.length));
     } catch {
       setError('Failed to fetch currencies');
     } finally {
       setLoading(false);
     }
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     fetchCurrencies();
-    const interval = setInterval(fetchCurrencies, 30000);
+    const interval = setInterval(fetchCurrencies, Number(import.meta.env.VITE_REFRESH_INTERVAL) || 30000);
     return () => clearInterval(interval);
   }, [fetchCurrencies]);
 
   const handleChangePage = (_: unknown, newPage: number) => {
-    dispatch(setPage(newPage + 1));
+    setPage(newPage);
   };
 
-  const handleSelectChange = (event: SelectChangeEvent<number>) => {
-    dispatch(setPageSize(Number(event.target.value)));
-  };
-
-  const handleTablePaginationChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    dispatch(setPageSize(Number(event.target.value)));
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   const handleSortChange = (event: SelectChangeEvent<string>) => {
@@ -98,8 +104,8 @@ const CurrencyList: React.FC = () => {
   });
 
   const paginatedCurrencies = sortedCurrencies.slice(
-    (page - 1) * pageSize,
-    page * pageSize
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
   );
 
   if (loading && currencies.length === 0) {
@@ -122,26 +128,13 @@ const CurrencyList: React.FC = () => {
     <Box sx={{ width: '100%' }}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Box display="flex" gap={2} alignItems="center">
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel>Размер страницы</InputLabel>
-          <Select
-            value={pageSize}
-            label="Размер страницы"
-            onChange={handleSelectChange}
-          >
-            <MenuItem value={10}>10</MenuItem>
-            <MenuItem value={25}>25</MenuItem>
-            <MenuItem value={50}>50</MenuItem>
-            <MenuItem value={100}>100</MenuItem>
-          </Select>
-        </FormControl>
           <FormControl sx={{ minWidth: 180 }}>
             <InputLabel>Сортировка</InputLabel>
-            <Select
+          <Select
               value={direction || 'none'}
               label="Сортировка"
               onChange={handleSortChange}
-            >
+          >
               <MenuItem value="none">
                 <Box display="flex" alignItems="center" gap={1}>
                   <SortIcon fontSize="small" />
@@ -160,8 +153,8 @@ const CurrencyList: React.FC = () => {
                   <Typography>По убыванию</Typography>
                 </Box>
               </MenuItem>
-            </Select>
-          </FormControl>
+          </Select>
+        </FormControl>
         </Box>
         <IconButton onClick={fetchCurrencies} disabled={loading}>
           <RefreshIcon />
@@ -201,19 +194,18 @@ const CurrencyList: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      </Paper>
-
       <TablePagination
         component="div"
-        count={totalItems}
-        page={page - 1}
+          count={currencies.length}
+          page={page}
         onPageChange={handleChangePage}
-        rowsPerPage={pageSize}
-        onRowsPerPageChange={handleTablePaginationChange}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
         rowsPerPageOptions={[10, 25, 50, 100]}
-        labelRowsPerPage="Строк на странице:"
-        labelDisplayedRows={({ from, to, count }) => `${from}-${to} из ${count}`}
+          labelRowsPerPage="Строк на странице:"
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} из ${count}`}
       />
+      </Paper>
     </Box>
   );
 };

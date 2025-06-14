@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from '@mui/material';
-import CurrencyConverter from '../components/CurrencyConverter/CurrencyConverter';
+import { CurrencyConverter } from '../components/CurrencyConverter';
 
 const ConverterPage: React.FC = () => {
   return (

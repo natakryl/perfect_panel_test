@@ -117,13 +117,13 @@ const Navigation: React.FC = () => {
                 </Button>
               ))}
               {isAuthenticated && (
-                <Button
-                  color="inherit"
-                  onClick={handleLogout}
-                  startIcon={<LogoutIcon />}
-                >
+              <Button
+                color="inherit"
+                onClick={handleLogout}
+                startIcon={<LogoutIcon />}
+              >
                   Выйти {user && `(${user})`}
-                </Button>
+              </Button>
               )}
             </Box>
           )}

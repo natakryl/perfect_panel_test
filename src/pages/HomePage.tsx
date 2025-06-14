@@ -1,6 +1,6 @@
 import React from 'react';
 import { Container } from '@mui/material';
-import CurrencyList from '../components/CurrencyList/CurrencyList';
+import { CurrencyList } from '../components/CurrencyList';
 
 const HomePage: React.FC = () => {
   return (

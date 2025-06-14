@@ -2,7 +2,7 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import type { RootState } from '../store';
-import LoginForm from '../components/Auth/LoginForm';
+import { LoginForm } from '../components/Auth';
 
 const LoginPage: React.FC = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);

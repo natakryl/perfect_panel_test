@@ -1,7 +1,5 @@
-import { AUTH_CREDENTIALS } from '../constants';
 import axios from 'axios';
 import type { Currency } from '../types';
-import { API_BASE_URL } from '../constants';
 
 interface CurrencyData {
   symbol: string;
@@ -13,7 +11,7 @@ interface CurrencyData {
 }
 
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.alternative.me/v2/ticker/',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -54,12 +52,11 @@ export const currencyApi = {
 
 export const authApi = {
   login: async (username: string, password: string): Promise<boolean> => {
-
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve(
-          username === AUTH_CREDENTIALS.username && 
-          password === AUTH_CREDENTIALS.password
+          username === import.meta.env.VITE_AUTH_USERNAME && 
+          password === import.meta.env.VITE_AUTH_PASSWORD
         );
       }, 1000);
     });

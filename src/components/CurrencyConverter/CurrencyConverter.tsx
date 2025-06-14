@@ -24,7 +24,7 @@ const CurrencyConverter: React.FC = () => {
   const [toCurrency, setToCurrency] = useState<string>('USD');
   const [result, setResult] = useState<string>('');
   const [resultWithCommission, setResultWithCommission] = useState<string>('');
-  const COMMISSION_RATE = 0.03; // 3% комиссия
+  const COMMISSION_RATE = Number(import.meta.env.VITE_COMMISSION_RATE) || 0.03;
 
   const convertCurrency = useCallback(() => {
     if (!amount || !fromCurrency || !toCurrency) return;
@@ -37,7 +37,7 @@ const CurrencyConverter: React.FC = () => {
     
     setResult(baseResult.toFixed(8));
     setResultWithCommission(totalResult.toFixed(8));
-  }, [amount, fromCurrency, toCurrency, currencies]);
+  }, [amount, fromCurrency, toCurrency, currencies, COMMISSION_RATE]);
 
   useEffect(() => {
     const fetchCurrencies = async () => {
@@ -98,7 +98,17 @@ const CurrencyConverter: React.FC = () => {
           sx={{ width: '200px' }}
         />
         <FormControl sx={{ width: '200px' }}>
-          <InputLabel>Из валюты</InputLabel>
+          <InputLabel 
+            sx={{ 
+              backgroundColor: 'white',
+              px: 0.5,
+              '&.Mui-focused': {
+                backgroundColor: 'white'
+              }
+            }}
+          >
+            Из валюты
+          </InputLabel>
           <Select
             value={fromCurrency}
             onChange={(e) => setFromCurrency(e.target.value)}
@@ -121,7 +131,17 @@ const CurrencyConverter: React.FC = () => {
         </IconButton>
 
         <FormControl sx={{ width: '200px' }}>
-          <InputLabel>В валюту</InputLabel>
+          <InputLabel 
+            sx={{ 
+              backgroundColor: 'white',
+              px: 0.5,
+              '&.Mui-focused': {
+                backgroundColor: 'white'
+              }
+            }}
+          >
+            В валюту
+          </InputLabel>
           <Select
             value={toCurrency}
             onChange={(e) => setToCurrency(e.target.value)}
