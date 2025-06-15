@@ -22,8 +22,6 @@ export const currencyApi = {
   getRates: async (): Promise<Record<string, string>> => {
     try {
       const response = await api.get('?limit=100');
-      console.log('API Response:', response.data);
-      
       const rates: Record<string, string> = {};
       
       (Object.values(response.data.data) as CurrencyData[]).forEach((currency) => {
@@ -32,7 +30,6 @@ export const currencyApi = {
         }
       });
       
-      console.log('Processed rates:', rates); 
       return rates;
     } catch (error: unknown) {
       if (error instanceof Error) {

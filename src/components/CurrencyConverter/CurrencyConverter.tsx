@@ -14,12 +14,14 @@ import {
 import { SwapHoriz as SwapIcon } from '@mui/icons-material';
 import { currencyApi } from '../../services/api';
 import type { Currency } from '../../types';
+import { useDebounce } from '../../hooks/useDebounce';
 
 const CurrencyConverter: React.FC = () => {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [amount, setAmount] = useState<string>('1');
+  const debouncedAmount = useDebounce(amount, 500);
   const [fromCurrency, setFromCurrency] = useState<string>('BTC');
   const [toCurrency, setToCurrency] = useState<string>('USD');
   const [result, setResult] = useState<string>('');
@@ -27,17 +29,17 @@ const CurrencyConverter: React.FC = () => {
   const COMMISSION_RATE = Number(import.meta.env.VITE_COMMISSION_RATE) || 0.03;
 
   const convertCurrency = useCallback(() => {
-    if (!amount || !fromCurrency || !toCurrency) return;
+    if (!debouncedAmount || !fromCurrency || !toCurrency) return;
 
     const fromRate = parseFloat(currencies.find(c => c.currency === fromCurrency)?.rate || '1');
     const toRate = parseFloat(currencies.find(c => c.currency === toCurrency)?.rate || '1');
-    const baseResult = (Number(amount) * toRate) / fromRate;
+    const baseResult = (Number(debouncedAmount) * toRate) / fromRate;
     const commission = baseResult * COMMISSION_RATE;
     const totalResult = baseResult + commission;
     
     setResult(baseResult.toFixed(8));
     setResultWithCommission(totalResult.toFixed(8));
-  }, [amount, fromCurrency, toCurrency, currencies, COMMISSION_RATE]);
+  }, [debouncedAmount, fromCurrency, toCurrency, currencies, COMMISSION_RATE]);
 
   useEffect(() => {
     const fetchCurrencies = async () => {
@@ -58,15 +60,17 @@ const CurrencyConverter: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (amount && fromCurrency && toCurrency) {
+    if (debouncedAmount && fromCurrency && toCurrency) {
       convertCurrency();
     }
-  }, [amount, fromCurrency, toCurrency, convertCurrency]);
+  }, [debouncedAmount, fromCurrency, toCurrency, convertCurrency]);
 
   const handleSwapCurrencies = () => {
     setFromCurrency(toCurrency);
     setToCurrency(fromCurrency);
   };
+
+  const isUpdating = amount !== debouncedAmount;
 
   if (loading && currencies.length === 0) {
     return (
@@ -162,13 +166,19 @@ const CurrencyConverter: React.FC = () => {
         </FormControl>
       </Box>
 
-        {result && (
+      {isUpdating ? (
         <Box mt={3}>
-          <Typography variant="h6" align="center">
-            {amount} {fromCurrency} → {resultWithCommission} {toCurrency} ({result} {toCurrency} + {COMMISSION_RATE * 100}%)
+          <Typography variant="h6" align="center" color="text.secondary">
+            Обновление...
           </Typography>
         </Box>
-        )}
+      ) : result && (
+        <Box mt={3}>
+          <Typography variant="h6" align="center">
+            {debouncedAmount} {fromCurrency} → {resultWithCommission} {toCurrency} ({result} {toCurrency} + {COMMISSION_RATE * 100}%)
+          </Typography>
+        </Box>
+      )}
     </Paper>
   );
 };

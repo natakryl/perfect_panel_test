@@ -1,54 +1,101 @@
-# React + TypeScript + Vite
+# Currency Exchange Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Приложение для просмотра курсов валют и конвертации валют
 
-Currently, two official plugins are available:
+## Требования
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js (версия 16 или выше)
+- npm или yarn
 
-## Expanding the ESLint configuration
+## Установка
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+1. Клонируйте репозиторий:
+```bash
+git clone <https://github.com/natakryl/perfect_panel_test.git>
+cd <perfect_panel_test>
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+2. Установите зависимости:
+```bash
+npm install
+# или
+yarn install
 ```
+
+3. Создайте файл `.env` в корневой директории проекта и добавьте следующие переменные окружения:
+```env
+VITE_COMMISSION_RATE=0.03
+VITE_PAGE_SIZES=10,25,50,100
+VITE_REFRESH_INTERVAL=30000
+VITE_API_BASE_URL=https://api.alternative.me/v2/ticker/
+VITE_AUTH_USERNAME=demo
+VITE_AUTH_PASSWORD=demo
+```
+
+## Запуск проекта
+
+### Режим разработки
+
+```bash
+npm run dev
+# или
+yarn dev
+```
+
+Приложение будет доступно по адресу: http://localhost:5173
+
+### Сборка для продакшена
+
+```bash
+npm run build
+# или
+yarn build
+```
+
+Собранные файлы будут находиться в директории `dist/`
+
+### Предпросмотр собранного проекта
+
+```bash
+npm run preview
+# или
+yarn preview
+```
+
+## Функциональность
+
+- Просмотр списка валют с их текущими курсами
+- Сортировка валют по курсу
+- Конвертация валют с учетом комиссии
+- Адаптивный дизайн для мобильных устройств
+- Авторизация пользователей
+
+## Технологии
+
+- React 19
+- TypeScript 5.8
+- Material-UI 7
+- Redux Toolkit 2.8
+- React Router 7
+- Axios
+- Vite 6.3
+
+## Структура проекта
+
+```
+src/
+  ├── components/     # React компоненты
+  ├── pages/         # Страницы приложения
+  ├── store/         # Redux store и слайсы
+  ├── services/      # API сервисы
+  ├── hooks/         # Пользовательские хуки
+  ├── types/         # TypeScript типы
+  └── utils/         # Вспомогательные функции
+```
+
+## Скрипты
+
+- `npm run dev` - запуск сервера разработки
+- `npm run build` - сборка проекта
+- `npm run preview` - предпросмотр собранного проекта
+- `npm run lint` - проверка кода линтером

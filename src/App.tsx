@@ -7,7 +7,7 @@ import type { RootState } from './store';
 import { Navigation } from './components/Layout';
 import { CircularProgress, Box } from '@mui/material';
 
-// Ленивая загрузка страниц
+
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const ConverterPage = lazy(() => import('./pages/ConverterPage'));
@@ -21,50 +21,58 @@ const theme = createTheme({
   },
 });
 
-// Компонент загрузки
 const LoadingFallback = () => (
   <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
     <CircularProgress />
   </Box>
 );
 
-const ProtectedContent = ({ children }: { children: React.ReactNode }) => {
+const AppRoutes = () => {
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+
+  return (
+    <Routes>
+      <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />} />
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? (
+            <Suspense fallback={<LoadingFallback />}>
+              <HomePage />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+      <Route
+        path="/converter"
+        element={
+          isAuthenticated ? (
+            <Suspense fallback={<LoadingFallback />}>
+              <ConverterPage />
+            </Suspense>
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+    </Routes>
+  );
 };
 
-function App() {
+const App = () => {
   return (
     <Provider store={store}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <BrowserRouter>
           <Navigation />
-          <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route
-                path="/"
-                element={
-                  <ProtectedContent>
-                    <HomePage />
-                  </ProtectedContent>
-                }
-              />
-              <Route
-                path="/converter"
-                element={
-                  <ProtectedContent>
-                    <ConverterPage />
-                  </ProtectedContent>
-                }
-              />
-          </Routes>
-          </Suspense>
+          <AppRoutes />
         </BrowserRouter>
       </ThemeProvider>
     </Provider>
   );
-}
+};
 
 export default App;
